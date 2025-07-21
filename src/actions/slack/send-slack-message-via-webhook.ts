@@ -16,6 +16,7 @@ export function createSendSlackMessageViaWebhookAction(options: {
   return createTemplateAction<{
     message: string;
     webhookUrl?: string;
+    channel?: string;
   }>({
     id: "slack:sendMessage:webhook",
     description: "Sends a Slack message via a webhook",
@@ -35,6 +36,12 @@ export function createSendSlackMessageViaWebhookAction(options: {
               "The webhook URL to send the request to. The URL must either be specified here or in the Backstage config",
             type: "string",
           },
+          channel: {
+            title: "Channel",
+            description:
+              "The channel to send the message to. This can be a channel name (e.g., #general) or channel ID. If not specified, the message will be sent to the webhook's default channel.",
+            type: "string",
+          },
         },
       },
     },
@@ -48,9 +55,13 @@ export function createSendSlackMessageViaWebhookAction(options: {
         );
       }
 
-      const body = {
+      const body: { text: string; channel?: string } = {
         text: ctx.input.message,
       };
+
+      if (ctx.input.channel) {
+        body.channel = ctx.input.channel;
+      }
 
       const result = await axios.post(webhookUrl, body);
 

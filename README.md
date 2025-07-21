@@ -91,6 +91,7 @@ spec:
       input:
         message: "Hello, world!"
         webhookUrl: "https://example.com" # optional if the URL is supplied in the app-config.yaml
+        channel: "#general" # optional - specify the channel to send the message to (can be channel name like #general or channel ID)
 
     # this step is an example of using the conversation action
     - id: send-slack-message

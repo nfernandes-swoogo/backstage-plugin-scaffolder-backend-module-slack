@@ -36,7 +36,7 @@ describe('slack:sendMessage', () => {
           message: 'Hello, world!',
         },
         logger,
-      } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; }, JsonObject>);
+      } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
       throw new Error('This should not succeed');
     } catch (err: any) {
       // eslint-disable-next-line jest/no-conditional-expect
@@ -64,7 +64,7 @@ describe('slack:sendMessage', () => {
         message: 'Hello, world!',
       },
       logger,
-    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; }, JsonObject>);
+    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
 
     expect(axios.post).toHaveBeenCalledWith(
       'https://example.com',
@@ -91,7 +91,7 @@ describe('slack:sendMessage', () => {
         webhookUrl: 'https://dontusethis.com',
       },
       logger,
-    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; }, JsonObject>);
+    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
 
     expect(axios.post).toHaveBeenCalledWith(
       'https://example.com',
@@ -117,7 +117,7 @@ describe('slack:sendMessage', () => {
         webhookUrl: 'https://nevergonnagiveyouup.com',
       },
       logger,
-    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; }, JsonObject>);
+      } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
 
     expect(axios.post).toHaveBeenCalledWith(
       'https://nevergonnagiveyouup.com',
@@ -144,7 +144,7 @@ describe('slack:sendMessage', () => {
         webhookUrl: 'https://dontusethis.com',
       },
       logger,
-    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; }, JsonObject>);
+    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
 
     expect(axios.post).toHaveBeenCalledWith(
       'https://example.com',
@@ -173,7 +173,7 @@ describe('slack:sendMessage', () => {
           webhookUrl: 'https://dontusethis.com',
         },
         logger,
-      } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; }, JsonObject>);
+      } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
       expect(true).toBeFalsy(); // force the test to fail if it doesn't throw an error
     } catch (err: any) {
       // eslint-disable-next-line jest/no-conditional-expect
@@ -181,5 +181,67 @@ describe('slack:sendMessage', () => {
         `Something went wrong while trying to send a request to the webhook URL - StatusCode 400`,
       );
     }
+  });
+
+  it('should send message to specified channel when channel is provided', async () => {
+    const action = createSendSlackMessageViaWebhookAction({
+      config: {
+        getOptionalString: (_key: string): string | undefined =>
+          'https://example.com',
+      } as Config,
+    });
+
+    mockedAxios.post.mockResolvedValue({ status: 200 });
+
+    const logger = {} as winston.Logger;
+
+    await action.handler({
+      ...defaultHandlerOptions,
+      input: {
+        message: 'Hello, world!',
+        channel: '#general',
+      },
+      logger,
+    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
+
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://example.com',
+      expect.objectContaining({ 
+        text: 'Hello, world!',
+        channel: '#general'
+      }),
+    );
+  });
+
+  it('should send message without channel property when channel is not provided', async () => {
+    const action = createSendSlackMessageViaWebhookAction({
+      config: {
+        getOptionalString: (_key: string): string | undefined =>
+          'https://example.com',
+      } as Config,
+    });
+
+    mockedAxios.post.mockResolvedValue({ status: 200 });
+
+    const logger = {} as winston.Logger;
+
+    await action.handler({
+      ...defaultHandlerOptions,
+      input: {
+        message: 'Hello, world!',
+      },
+      logger,
+    } as unknown as ActionContext<{ message: string; webhookUrl?: string | undefined; channel?: string | undefined; }, JsonObject>);
+
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://example.com',
+      expect.objectContaining({ 
+        text: 'Hello, world!'
+      }),
+    );
+
+    // Verify that the channel property is not included in the request body
+    const lastCall = mockedAxios.post.mock.calls[mockedAxios.post.mock.calls.length - 1];
+    expect(lastCall[1]).not.toHaveProperty('channel');
   });
 });
