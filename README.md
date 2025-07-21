@@ -33,7 +33,7 @@ Alternatively, there is an app manifest provided in the `slack-app-manifest.yaml
 In the root directory of your Backstage project:
 
 ```shell
-yarn add --cwd packages/backend @mdude2314/backstage-plugin-scaffolder-backend-module-slack
+yarn add --cwd packages/backend @nfernandes-swoogo/backstage-plugin-scaffolder-backend-module-slack
 ```
 
 Add the actions you'd like to the scaffolder:
@@ -43,7 +43,7 @@ Add the actions you'd like to the scaffolder:
 
 import {
   sendSlackMessageModule
-} from '@mdude2314/backstage-plugin-scaffolder-backend-module-slack'
+} from '@nfernandes-swoogo/backstage-plugin-scaffolder-backend-module-slack'
 
 ...
 
@@ -80,7 +80,7 @@ metadata:
   title: My Slack message demo
   description: Send a message via Slack
 spec:
-  owner: mdude2314
+  owner: nfernandes-swoogo
   type: service
 
   steps:

@@ -4,4 +4,5 @@
  *
  * @packageDocumentation
  */
-export * from './actions';
+export * from "./actions";
+export { scaffolderModuleSendSlackMessage as default } from "./module";
